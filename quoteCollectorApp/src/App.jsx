@@ -1,10 +1,6 @@
 import './App.css'
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { supabase } from "./supabaseClient";
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -16,18 +12,20 @@ function App() {
   async function getUsers() {
     const { data, error } = await supabase
       .from("testusers")
-      .select()
-    await console.log("Fetched users:", data);
+      .select("*")
 
     if (error) {
       console.error("Error fetching users:", error);
     } else {
       setUsers(data);
     }
+    
+    if(!data || data.length === 0) {
+      console.warn("No users found in the database.");
+    }
   }
 
   function getUserOption() {
-    console.log("Users:", users);
     return users.map((user) => (
       <option key={user.id} value={user.id}>
         {user.username}
