@@ -58,7 +58,7 @@ const QuoteEntry = (props) => {
 		addQuote(quote, author, recorder);
 	}
 
-	async function addQuote(quote, author, recorder, group = 1) {
+	async function addQuote(quote, author, recorder, group = 2) {
 		const { data, error } = await supabase.from("quotes").insert([
 			{
 				group: group,
