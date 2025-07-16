@@ -1,4 +1,4 @@
-#root {
+/* #root {
 	max-width: 1280px;
 	margin: 0 auto;
 	padding: 2rem;
@@ -11,7 +11,8 @@
 
 form {
 	display: grid;
-	grid-template-columns: 2fr auto;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
 	margin: 1rem auto;
 	max-width: 600px;
 	padding: 1rem;
@@ -24,3 +25,12 @@ section {
 	display: flex;
 	flex-direction: column;
 }
+
+textarea {
+	width: auto;
+	height: 100px;
+	padding: 0.5rem;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-size: 1rem;
+} */
