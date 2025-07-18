@@ -79,7 +79,7 @@ const QuoteEntry = (props) => {
 			<h1>Welcome to Quote Collector!</h1>
 			<p>Collect and share your favorite quotes!</p>
 			<form
-				className="grid grid-cols-2 gap-4 m-auto max-w-2xl p-4 border-2 border-gray-300 rounded-lg shadow-md"
+				className="grid grid-cols-2 gap-4 m-auto max-w-2xl p-4 border-2 border-gray-300 rounded-lg shadow-md dark:bg-overlay-dark"
 				onSubmit={handleSubmit}
 			>
 				<label htmlFor="quote" className="col-span-2">
