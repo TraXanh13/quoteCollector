@@ -15,7 +15,7 @@ const Header = () => {
 		}
 	};
 	return (
-		<header className="top-0 flex justify-between items-center p-4 bg-gray-800 text-white">
+		<header className="top-0 flex justify-between items-center p-4 text-white">
 			<p>Quote Collector</p>
 			{session == undefined ? (
 				<Link to="/signin">Sign In</Link>
