@@ -1,11 +1,8 @@
-// Importing the Header component
-import Header from "./components/Header";
 import QuoteEntry from "./components/QuoteEntry";
 
 function App() {
 	return (
 		<>
-			<Header />
 			<QuoteEntry />
 		</>
 	);
