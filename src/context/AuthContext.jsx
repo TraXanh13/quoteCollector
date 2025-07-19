@@ -37,15 +37,22 @@ export const AuthProvider = ({ children }) => {
 	};
 
 	// Check if profile exists via user ID
-	const assignProfile = async () => {
+	const assignProfile = async (userID = null) => {
+		const userIDToUse = userID || session?.user?.id;
+
+		if (!userIDToUse) {
+			setProfile(undefined);
+			return;
+		}
+
 		const { data } = await supabase
 			.from("profiles")
 			.select("*")
-			.eq("user_id", `${session?.user?.id}`);
+			.eq("user_id", userIDToUse);
 
-		if (data) {
+		if (data && data.length > 0) {
 			console.log("Profile found:", data);
-			setProfile(data);
+			setProfile(data[0]);
 		} else {
 			console.warn("No profile found for user ID:", session?.user?.id);
 			setProfile(undefined);
@@ -64,10 +71,9 @@ export const AuthProvider = ({ children }) => {
 				console.error("Error signing in:", error);
 				return { success: false, error };
 			}
-			console.log("Sign in successful:", data.session.user);
-			alert("check Console");
-			await setSession(data.session);
-			assignProfile();
+
+			setSession(data.session);
+			await assignProfile(data.session.user.id);
 			return { success: true, data };
 		} catch (error) {
 			console.error("Unexpected error during sign in:", error);

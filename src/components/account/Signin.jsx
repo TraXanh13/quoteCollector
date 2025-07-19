@@ -17,7 +17,6 @@ const Signin = () => {
 			const result = await signInUser(email, password);
 
 			if (result.success) {
-				assignProfile();
 				navigate("/dashboard");
 			} else {
 				setError(

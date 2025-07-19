@@ -15,16 +15,7 @@ const Header = () => {
 		}
 	};
 
-	return session === undefined ? (
-		<header className="top-0 flex justify-between items-center p-4">
-			<Link to="/" className="text-text dark:text-text-dark">
-				Quote Collector
-			</Link>
-			<Link to="/signin" className="text-text dark:text-text-dark">
-				Sign In
-			</Link>
-		</header>
-	) : (
+	return session != undefined ? (
 		<header className="top-0 flex justify-between items-center p-4">
 			<Link to="/dashboard" className="text-text dark:text-text-dark">
 				Quote Collector
@@ -37,6 +28,15 @@ const Header = () => {
 					Sign Out
 				</a>
 			</div>
+		</header>
+	) : (
+		<header className="top-0 flex justify-between items-center p-4">
+			<Link to="/" className="text-text dark:text-text-dark">
+				Quote Collector
+			</Link>
+			<Link to="/signin" className="text-text dark:text-text-dark">
+				Sign In
+			</Link>
 		</header>
 	);
 };
