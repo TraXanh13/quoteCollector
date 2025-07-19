@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../util/supabaseClient";
 
 const QuoteEntry = (props) => {
 	const [users, setUsers] = useState([]);
@@ -9,18 +9,22 @@ const QuoteEntry = (props) => {
 	}, []);
 
 	async function getUsers() {
+		// TODO: Populate the user dropdown with users from the database with the appropriate group
 		const { data, error } = await supabase
-			.from("users")
-			.select(
-				`
-				id,
-				first_name, 
-				last_name,
-				group_members!inner(group_id)
-				`
-			)
-			.in("group_members.group_id", [2])
+			.from("profiles")
+			.select("first_name, last_name, id")
 			.order("first_name", { ascending: true });
+
+		// .select(
+		// 	`
+		// id,
+		// first_name,
+		// last_name,
+		// group_members!inner(group_id)
+		// `
+		// )
+		// .in("group_members.group_id", "8d055650-caba-4dbd-b03d-f746d3352590")
+		// .order("first_name", { ascending: true });
 
 		if (error) {
 			console.error("Error fetching users:", error);
@@ -75,9 +79,7 @@ const QuoteEntry = (props) => {
 	}
 
 	return (
-		<div className="w-screen p-2 text-center my-0 mx-auto">
-			<h1>Welcome to Quote Collector!</h1>
-			<p>Collect and share your favorite quotes!</p>
+		<div>
 			<form
 				className="grid grid-cols-2 gap-4 m-auto max-w-2xl p-4 border-2 border-gray-300 rounded-lg shadow-md dark:bg-overlay-dark"
 				onSubmit={handleSubmit}
@@ -87,25 +89,31 @@ const QuoteEntry = (props) => {
 				</label>
 				<textarea
 					id="quote"
-					className="col-span-2"
+					className="col-span-2 p-2"
 					name="quote"
 					placeholder="Type your quote here..."
 					required
 				/>
-				<section>
-					<label htmlFor="author">Who said it:</label>
-					<select id="author" name="author" required>
+				<section className="flex gap-2">
+					<label htmlFor="author" className="my-auto">
+						Who said it:
+					</label>
+					<select className="my-auto" id="author" name="author" required>
 						<option value="">Select an author</option>
-						{USER_OPTIONS.slice(1)}
-					</select>
-				</section>
-				<section>
-					<label htmlFor="recorder">Whose recording it:</label>
-					<select id="recorder" name="recorder" required>
-						<option value="">Select a recorder</option>
-						<option value="0">Anonymous</option>
 						{USER_OPTIONS}
 					</select>
+				</section>
+				<section className="flex gap-2">
+					<label htmlFor="recorder" className="my-auto">
+						Mark as Anonymous:
+					</label>
+					<input
+						type="checkbox"
+						className="my-auto"
+						id="recorder"
+						name="recorder"
+						value="0"
+					/>
 				</section>
 				<button type="submit" className="col-span-2 w-max px-4 mx-auto">
 					Submit Quote

@@ -1,7 +1,8 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import App from "./App";
-import Signup from "./components/Signup";
-import Signin from "./components/Signin";
+import Signup from "./components/account/Signup";
+import Signin from "./components/account/Signin";
+import EditProfile from "./components/account/EditProfile";
 import Dashboard from "./components/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header";
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
 			},
 			{ path: "/signup", element: <Signup /> },
 			{ path: "/signin", element: <Signin /> },
+			{ path: "/edit-profile", element: <EditProfile /> },
 		],
 	},
 ]);

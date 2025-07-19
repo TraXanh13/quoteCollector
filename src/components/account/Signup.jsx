@@ -1,22 +1,22 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { UserAuth } from "../context/AuthContext.jsx";
+import { UserAuth } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 
-const Signin = () => {
+const Signup = () => {
 	const [email, setEmail] = React.useState("");
 	const [password, setPassword] = React.useState("");
 	const [error, setError] = React.useState("");
 	const [loading, setLoading] = React.useState("");
 
-	const { session, signInUser } = UserAuth();
+	const { session, signUpNewUser } = UserAuth();
 	const navigate = useNavigate();
 
-	const handleSignIn = async (e) => {
+	const handleSignUp = async (e) => {
 		e.preventDefault();
 		setLoading(true);
 		try {
-			const result = await signInUser(email, password);
+			const result = await signUpNewUser(email, password);
 
 			if (result.success) {
 				navigate("/dashboard");
@@ -31,10 +31,10 @@ const Signin = () => {
 
 	return (
 		<form
-			onSubmit={handleSignIn}
+			onSubmit={handleSignUp}
 			className="max-w-md mx-auto mt-10 p-6 rounded-lg shadow-lg dark:bg-overlay-dark"
 		>
-			<h1 className="text-center mb-8">Sign in</h1>
+			<h1 className="text-center mb-8">Sign up today!</h1>
 			<div className="flex flex-col">
 				<input
 					type="email"
@@ -56,10 +56,10 @@ const Signin = () => {
 				{error && <p className="text-red-500 text-center mt-2">{error}</p>}
 			</div>
 			<p className="text-center mt-4">
-				Are you a new user? <Link to="/signup">Sign up!</Link>
+				Already have an account? <Link to="/signin">Sign in!</Link>
 			</p>
 		</form>
 	);
 };
 
-export default Signin;
+export default Signup;
