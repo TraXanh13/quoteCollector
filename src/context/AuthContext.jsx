@@ -51,7 +51,6 @@ export const AuthProvider = ({ children }) => {
 			.eq("user_id", userIDToUse);
 
 		if (data && data.length > 0) {
-			console.log("Profile found:", data);
 			setProfile(data[0]);
 		} else {
 			console.warn("No profile found for user ID:", session?.user?.id);
