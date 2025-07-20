@@ -1,31 +1,25 @@
 import React from "react";
 import { UserAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import QuoteEntry from "./QuoteEntry";
 
 const Dashboard = () => {
-	const { session, signOut } = UserAuth();
+	const { session, profile } = UserAuth();
 	const navigate = useNavigate();
 
-	const handSignOut = async (e) => {
-		e.preventDefault();
-		try {
-			await signOut();
-			navigate("/");
-		} catch (error) {
-			console.error("Error signing out:", error);
+	useEffect(() => {
+		// Check if user has a profile, if not redirect to edit profile
+		if (session && profile === undefined) {
+			navigate("/edit-profile");
 		}
-	};
+	}, [session, profile, navigate]);
 
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<h2>Welcome, {session?.user?.email}</h2>
-			<button
-				onClick={handSignOut}
-				className="bg-link hover:bg-link-hover text-white px-4 py-2 rounded-button"
-			>
-				Sign out
-			</button>
+		<div className="w-screen p-2 text-center my-0 mx-auto">
+			<h1>Welcome to Quote Collector!</h1>
+			<p>Collect and share your favorite quotes!</p>
+			<QuoteEntry />
 		</div>
 	);
 };

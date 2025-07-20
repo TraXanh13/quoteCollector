@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { UserAuth } from "../context/AuthContext.jsx";
+import { UserAuth } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const Signup = () => {

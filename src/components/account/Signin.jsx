@@ -1,31 +1,30 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { UserAuth } from "../context/AuthContext.jsx";
+import { UserAuth } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const Signin = () => {
 	const [email, setEmail] = React.useState("");
 	const [password, setPassword] = React.useState("");
 	const [error, setError] = React.useState("");
-	const [loading, setLoading] = React.useState("");
 
-	const { session, signInUser } = UserAuth();
+	const { session, signInUser, assignProfile } = UserAuth();
 	const navigate = useNavigate();
 
 	const handleSignIn = async (e) => {
 		e.preventDefault();
-		setLoading(true);
 		try {
 			const result = await signInUser(email, password);
 
 			if (result.success) {
 				navigate("/dashboard");
+			} else {
+				setError(
+					result.error.message || "Failed to sign in. Please try again."
+				);
 			}
 		} catch (error) {
-			console.error("Error during sign up:", error);
-			setError("Failed to sign up. Please try again.");
-		} finally {
-			setLoading(false);
+			setError("Failed to sign up. Please try again. " + error.message);
 		}
 	};
 
@@ -52,8 +51,12 @@ const Signin = () => {
 					onChange={(e) => setPassword(e.target.value)}
 					required
 				/>
-				<button type="submit">Sign Up</button>
-				{error && <p className="text-red-500 text-center mt-2">{error}</p>}
+				<button type="submit">Sign In</button>
+				{error && (
+					<p className="text-red-500 text-center mt-2">
+						{error}, please try again
+					</p>
+				)}
 			</div>
 			<p className="text-center mt-4">
 				Are you a new user? <Link to="/signup">Sign up!</Link>
