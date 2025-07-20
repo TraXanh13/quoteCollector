@@ -54,7 +54,7 @@ const Signin = () => {
 				<button type="submit">Sign In</button>
 				{error && (
 					<p className="text-red-500 text-center mt-2">
-						{error}, pleaes try again
+						{error}, please try again
 					</p>
 				)}
 			</div>

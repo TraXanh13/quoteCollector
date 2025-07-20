@@ -12,7 +12,7 @@ const EditProfile = () => {
 	const handleEditProfile = async (e) => {
 		e.preventDefault();
 		try {
-			const { data, error } = await supabase.from("profiles").insert([
+			const { data, error } = await supabase.from("profiles").upsert([
 				{
 					first_name: fname,
 					last_name: lname,
@@ -21,7 +21,7 @@ const EditProfile = () => {
 				},
 			]);
 			if (error) throw error;
-			alert("Profile created successfully!");
+			alert("Profile was updated successfully!");
 			assignProfile();
 		} catch (error) {
 			console.error("Error creating profile:", error);

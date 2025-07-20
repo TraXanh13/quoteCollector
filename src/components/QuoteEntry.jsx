@@ -8,9 +8,11 @@ const QuoteEntry = () => {
 	const { profile } = UserAuth();
 
 	useEffect(() => {
-		getUserGroups();
+		if (profile?.id) {
+			getUserGroups();
+		}
 		getUsers();
-	}, []);
+	}, [profile?.id]);
 
 	// Pulls from supabase to get all the groups associated to the logged in user
 	async function getUserGroups() {
@@ -27,7 +29,7 @@ const QuoteEntry = () => {
 		}
 
 		if (!data || data.length === 0) {
-			console.warn("No users found in the database.");
+			console.warn("No groups found in the database.");
 		}
 	}
 
@@ -99,7 +101,7 @@ const QuoteEntry = () => {
 
 	async function addQuote({
 		// This defaults to the test group
-		group = "8d055650-caba-4dbd-b03d-f746d3352590",
+		group,
 		quote,
 		author,
 		recorder,

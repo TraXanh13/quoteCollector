@@ -29,7 +29,7 @@ export const QuoteProvider = ({ children }) => {
 		}
 
 		if (!data || data.length === 0) {
-			console.warn("No users found in the database.");
+			console.warn("No groups found in the database.");
 		}
 	}
 
@@ -51,7 +51,11 @@ export const QuoteProvider = ({ children }) => {
 		}
 	}
 
-	return <QuoteContext.Provider value={{}}>{children}</QuoteContext.Provider>;
+	return (
+		<QuoteContext.Provider value={{ users, userGroups }}>
+			{children}
+		</QuoteContext.Provider>
+	);
 };
 
 export const useQuote = () => {
