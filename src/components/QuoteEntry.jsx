@@ -1,12 +1,35 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../util/supabaseClient";
+import { UserAuth } from "../context/AuthContext.jsx";
 
-const QuoteEntry = (props) => {
+const QuoteEntry = () => {
 	const [users, setUsers] = useState([]);
+	const [userGroups, setUserGroups] = useState([]);
+	const { profile } = UserAuth();
 
 	useEffect(() => {
+		getUserGroups();
 		getUsers();
 	}, []);
+
+	// Pulls from supabase to get all the groups associated to the logged in user
+	async function getUserGroups() {
+		const { data, error } = await supabase
+			.from("group_members")
+			.select("groups(name, id)")
+			.eq("user_id", profile?.id)
+			.order("groups(name)", { ascending: true });
+
+		if (error) {
+			console.error("Error fetching user groups:", error);
+		} else {
+			setUserGroups(data);
+		}
+
+		if (!data || data.length === 0) {
+			console.warn("No users found in the database.");
+		}
+	}
 
 	async function getUsers() {
 		// TODO: Populate the user dropdown with users from the database with the appropriate group
@@ -14,17 +37,6 @@ const QuoteEntry = (props) => {
 			.from("profiles")
 			.select("first_name, last_name, id")
 			.order("first_name", { ascending: true });
-
-		// .select(
-		// 	`
-		// id,
-		// first_name,
-		// last_name,
-		// group_members!inner(group_id)
-		// `
-		// )
-		// .in("group_members.group_id", "8d055650-caba-4dbd-b03d-f746d3352590")
-		// .order("first_name", { ascending: true });
 
 		if (error) {
 			console.error("Error fetching users:", error);
@@ -37,6 +49,7 @@ const QuoteEntry = (props) => {
 		}
 	}
 
+	// Generates options for the user dropdown
 	function getUserOption() {
 		return users.map((user) => (
 			<option key={user.id} value={user.id}>
@@ -45,36 +58,66 @@ const QuoteEntry = (props) => {
 		));
 	}
 
+	// Generates options for the group dropdown
+	function getGroupOptions() {
+		return userGroups.map((group) => (
+			<option key={group.groups.id} value={group.groups.id}>
+				{group.groups.name}
+			</option>
+		));
+	}
+
+	const USER_GROUPS = getGroupOptions();
 	const USER_OPTIONS = getUserOption();
 
 	function handleSubmit(event) {
 		event.preventDefault();
+
+		// Collect form data
 		const formData = new FormData(event.target);
+		const group = formData.get("group");
 		const quote = formData.get("quote");
 		const author = formData.get("author");
-		const recorder = formData.get("recorder");
+		const recorder = profile?.id;
+		const isAnonymous =
+			formData.get("recorder") == "markAsAnonymous" ? true : false;
 		if (!quote || !author || !recorder) {
 			alert("Please fill in all fields.");
 			return;
 		}
 
-		alert(`Quote submitted: "${quote}" by ${author}, recorded by ${recorder}`);
-		addQuote(quote, author, recorder);
+		// TODO: Set this as a loading state
+		alert(`Quote submitted!`);
+		addQuote({
+			group: group,
+			quote: quote,
+			author: author,
+			recorder: recorder,
+			isAnonymous: isAnonymous,
+		});
 	}
 
-	async function addQuote(quote, author, recorder, group = 2) {
-		const { data, error } = await supabase.from("quotes").insert([
+	async function addQuote({
+		// This defaults to the test group
+		group = "8d055650-caba-4dbd-b03d-f746d3352590",
+		quote,
+		author,
+		recorder,
+		isAnonymous,
+	}) {
+		const { error } = await supabase.from("quotes").insert([
 			{
-				group: group,
-				author: author,
-				recorder: recorder,
+				author_id: author,
+				recorder_id: recorder,
+				group_id: group,
+				is_anon: isAnonymous,
 				quote: quote,
 			},
 		]);
 		if (error) {
 			console.error("Error adding quote:", error);
 		} else {
-			alert("Quote added successfully:");
+			alert("Quote added successfully");
 		}
 	}
 
@@ -84,9 +127,14 @@ const QuoteEntry = (props) => {
 				className="grid grid-cols-2 gap-4 m-auto max-w-2xl p-4 border-2 border-gray-300 rounded-lg shadow-md dark:bg-overlay-dark"
 				onSubmit={handleSubmit}
 			>
-				<label htmlFor="quote" className="col-span-2">
-					Enter a Quote:
-				</label>
+				<section className="col-span-2 flex mx-auto">
+					<label htmlFor="quote" className="col-span-2">
+						Enter a Quote to Group:
+						<select className="my-auto mx-4" id="group" name="group">
+							{USER_GROUPS}
+						</select>
+					</label>
+				</section>
 				<textarea
 					id="quote"
 					className="col-span-2 p-2"
@@ -112,7 +160,7 @@ const QuoteEntry = (props) => {
 						className="my-auto"
 						id="recorder"
 						name="recorder"
-						value="0"
+						value="markAsAnonymous"
 					/>
 				</section>
 				<button type="submit" className="col-span-2 w-max px-4 mx-auto">
