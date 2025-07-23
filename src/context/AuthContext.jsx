@@ -1,28 +1,115 @@
-import { createContext, useEffect, useState, useContext } from "react";
+import {
+	createContext,
+	useEffect,
+	useState,
+	useContext,
+	useCallback,
+} from "react";
 import { supabase } from "../util/supabaseClient";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-	const [session, setSession] = useState(undefined);
-	const [profile, setProfile] = useState(undefined);
+	const [session, setSession] = useState(null);
+	const [profile, setProfile] = useState(null);
+	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		supabase.auth.getSession().then(({ data: { session } }) => {
-			setSession(session);
-		});
+	const assignProfile = useCallback(async (userID) => {
+		if (!userID) {
+			setProfile(null);
+			return;
+		}
 
-		supabase.auth.onAuthStateChange((_event, session) => {
-			setSession(session);
-			if (session) {
-				assignProfile();
+		try {
+			const queryPromise = supabase
+				.from("profiles")
+				.select("*")
+				.eq("user_id", userID)
+				.single();
+
+			const timeoutPromise = new Promise((_, reject) =>
+				setTimeout(() => reject(new Error("Profile query timeout")), 500)
+			);
+
+			const { data, error } = await Promise.race([
+				queryPromise,
+				timeoutPromise,
+			]);
+
+			if (error) {
+				console.error("Error fetching profile:", error);
+				setProfile(null);
+			} else if (data) {
+				setProfile(data);
 			} else {
-				setProfile(undefined);
+				setProfile(null);
 			}
-		});
+		} catch (error) {
+			console.error("Unexpected error fetching profile:", error);
+			setProfile(null);
+		} finally {
+			setLoading(false);
+		}
 	}, []);
 
-	// New user sign up
+	useEffect(() => {
+		let mounted = true;
+
+		const initializeAuth = async () => {
+			try {
+				const {
+					data: { session },
+					error,
+				} = await supabase.auth.getSession();
+
+				if (error) {
+					console.error("Error getting session:", error);
+					if (mounted) {
+						setSession(null);
+						setLoading(false);
+					}
+					return;
+				}
+
+				if (mounted) {
+					setSession(session);
+					if (session && session.user) {
+						await assignProfile(session.user.id);
+					} else {
+						setLoading(false);
+					}
+				}
+			} catch (error) {
+				console.error("Error initializing auth:", error);
+				if (mounted) {
+					setSession(null);
+					setLoading(false);
+				}
+			}
+		};
+
+		initializeAuth();
+
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange(async (event, session) => {
+			if (mounted) {
+				setSession(session);
+				if (session && session.user) {
+					await assignProfile(session.user.id);
+				} else {
+					setProfile(null);
+					setLoading(false);
+				}
+			}
+		});
+
+		return () => {
+			mounted = false;
+			subscription.unsubscribe();
+		};
+	}, [assignProfile]);
+
 	const signUpNewUser = async (email, password) => {
 		const { data, error } = await supabase.auth.signUp({
 			email: email,
@@ -36,29 +123,6 @@ export const AuthProvider = ({ children }) => {
 		return { success: true, data };
 	};
 
-	// Check if profile exists via user ID
-	const assignProfile = async (userID = null) => {
-		const userIDToUse = userID || session?.user?.id;
-
-		if (!userIDToUse) {
-			setProfile(undefined);
-			return;
-		}
-
-		const { data } = await supabase
-			.from("profiles")
-			.select("*")
-			.eq("user_id", userIDToUse);
-
-		if (data && data.length > 0) {
-			setProfile(data[0]);
-		} else {
-			console.warn("No profile found for user ID:", session?.user?.id);
-			setProfile(undefined);
-		}
-	};
-
-	// Sign in function
 	const signInUser = async (email, password) => {
 		try {
 			const { data, error } = await supabase.auth.signInWithPassword({
@@ -71,8 +135,6 @@ export const AuthProvider = ({ children }) => {
 				return { success: false, error };
 			}
 
-			setSession(data.session);
-			await assignProfile(data.session.user.id);
 			return { success: true, data };
 		} catch (error) {
 			console.error("Unexpected error during sign in:", error);
@@ -80,13 +142,10 @@ export const AuthProvider = ({ children }) => {
 		}
 	};
 
-	// Sign out function
 	const signOut = async () => {
 		const { error } = await supabase.auth.signOut();
 		if (error) {
 			console.error("Error signing out:", error);
-		} else {
-			setSession(undefined);
 		}
 	};
 
@@ -95,6 +154,7 @@ export const AuthProvider = ({ children }) => {
 			value={{
 				session,
 				profile,
+				loading,
 				assignProfile,
 				signInUser,
 				signOut,

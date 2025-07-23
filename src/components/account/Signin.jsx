@@ -8,8 +8,14 @@ const Signin = () => {
 	const [password, setPassword] = React.useState("");
 	const [error, setError] = React.useState("");
 
-	const { session, signInUser, assignProfile } = UserAuth();
+	const { session, signInUser } = UserAuth();
 	const navigate = useNavigate();
+
+	React.useEffect(() => {
+		if (session) {
+			navigate("/dashboard", { replace: true });
+		}
+	}, [session, navigate]);
 
 	const handleSignIn = async (e) => {
 		e.preventDefault();
@@ -17,14 +23,14 @@ const Signin = () => {
 			const result = await signInUser(email, password);
 
 			if (result.success) {
-				navigate("/dashboard");
+				// Navigation handled by useEffect
 			} else {
 				setError(
 					result.error.message || "Failed to sign in. Please try again."
 				);
 			}
 		} catch (error) {
-			setError("Failed to sign up. Please try again. " + error.message);
+			setError("Failed to sign in. Please try again. " + error.message);
 		}
 	};
 

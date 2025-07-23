@@ -21,6 +21,7 @@ const EditProfile = () => {
 				},
 			]);
 			if (error) throw error;
+			// Update this for better UX
 			alert("Profile was updated successfully!");
 			assignProfile();
 		} catch (error) {

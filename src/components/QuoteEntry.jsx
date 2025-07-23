@@ -82,7 +82,7 @@ const QuoteEntry = () => {
 		const author = formData.get("author");
 		const recorder = profile?.id;
 		const isAnonymous =
-			formData.get("recorder") == "markAsAnonymous" ? true : false;
+			formData.get("recorder") === "markAsAnonymous" ? true : false;
 		if (!quote || !author || !recorder) {
 			alert("Please fill in all fields.");
 			return;

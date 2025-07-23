@@ -5,15 +5,19 @@ import { useEffect } from "react";
 import QuoteEntry from "./QuoteEntry";
 
 const Dashboard = () => {
-	const { session, profile } = UserAuth();
+	const { session, profile, loading } = UserAuth();
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		// Check if user has a profile, if not redirect to edit profile
-		if (session && profile === undefined) {
+		// Only redirect if we're not loading and have a session but no profile
+		if (!loading && session && profile === undefined) {
 			navigate("/edit-profile");
 		}
-	}, [session, profile, navigate]);
+	}, [session, profile, navigate, loading]);
+
+	if (loading) {
+		return <div>Loading...</div>;
+	}
 
 	return (
 		<div className="w-screen p-2 text-center my-0 mx-auto">
