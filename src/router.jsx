@@ -8,32 +8,46 @@ import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header";
 
 const Layout = () => {
-	return (
-		<>
-			<Header />
-			<Outlet />
-		</>
-	);
+    return (
+        <>
+            <Header />
+            <Outlet />
+        </>
+    );
 };
 
 export const router = createBrowserRouter([
-	// { path: "/", element: <App /> },
-	{
-		path: "/",
-		element: <Layout />,
-		children: [
-			{ index: true, element: <App /> },
-			{
-				path: "/dashboard",
-				element: (
-					<PrivateRoute>
-						<Dashboard />
-					</PrivateRoute>
-				),
-			},
-			{ path: "/signup", element: <Signup /> },
-			{ path: "/signin", element: <Signin /> },
-			{ path: "/edit-profile", element: <EditProfile /> },
-		],
-	},
+    {
+        path: "/",
+        element: <Layout />,
+        children: [
+            { 
+                index: true, 
+                element: (
+                    <PrivateRoute>
+                        <Dashboard />
+                    </PrivateRoute>
+                )
+            }, // Redirect authenticated users to dashboard
+            {
+                path: "/dashboard",
+                element: (
+                    <PrivateRoute>
+                        <Dashboard />
+                    </PrivateRoute>
+                ),
+            },
+            { path: "/signup", element: <Signup /> },
+            { path: "/signin", element: <Signin /> },
+            { 
+                path: "/edit-profile", 
+                element: (
+                    <PrivateRoute>
+                        <EditProfile />
+                    </PrivateRoute>
+                )
+            },
+            { path: "/welcome", element: <App /> }, // Move the welcome page to a separate route
+        ],
+    },
 ]);

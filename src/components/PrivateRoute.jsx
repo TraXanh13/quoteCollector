@@ -3,15 +3,30 @@ import { UserAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 
 const PrivateRoute = ({ children }) => {
-	const { session } = UserAuth();
+	const { session, loading } = UserAuth(); // Remove profile dependency
 
-	// Without this, a flicker of the locked page would be displayed.
-	if (session === undefined) {
-		return <div>Loading...</div>; // Optionally handle loading state
+	// Show loading while checking authentication
+	if (loading) {
+		return (
+			<div
+				style={{
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					height: "100vh",
+				}}
+			>
+				Loading...
+			</div>
+		);
 	}
 
-	// If the session exist, show the contents of the dashboard, otherwise redirect to signup
-	return <>{session ? <>{children}</> : <Navigate to="/signup" />}</>;
+	// Check authentication - only need session
+	if (!session) {
+		return <Navigate to="/signup" replace />;
+	}
+
+	return children;
 };
 
 export default PrivateRoute;
