@@ -14,43 +14,42 @@ export const AuthProvider = ({ children }) => {
 	const [profile, setProfile] = useState(null);
 	const [loading, setLoading] = useState(true);
 
-	const assignProfile = useCallback(async (userID) => {
-		if (!userID) {
-			setProfile(null);
-			return;
-		}
-
-		try {
-			const queryPromise = supabase
-				.from("profiles")
-				.select("*")
-				.eq("user_id", userID)
-				.single();
-
-			const timeoutPromise = new Promise((_, reject) =>
-				setTimeout(() => reject(new Error("Profile query timeout")), 500)
-			);
-
-			const { data, error } = await Promise.race([
-				queryPromise,
-				timeoutPromise,
-			]);
-
-			if (error) {
-				console.error("Error fetching profile:", error);
+	const assignProfile = useCallback(
+		async (userID) => {
+			if (!userID) {
 				setProfile(null);
-			} else if (data) {
-				setProfile(data);
-			} else {
-				setProfile(null);
+				return;
 			}
-		} catch (error) {
-			console.error("Unexpected error fetching profile:", error);
-			setProfile(null);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+
+			// Don't refetch if we already have this user's profile
+			if (profile && profile.user_id === userID) {
+				return;
+			}
+
+			try {
+				const { data, error } = await supabase
+					.from("profiles")
+					.select("id, user_id, first_name, last_name, username")
+					.eq("user_id", userID)
+					.single();
+
+				if (error) {
+					console.error("Error fetching profile:", error);
+					setProfile(null);
+				} else if (data) {
+					setProfile(data);
+				} else {
+					setProfile(null);
+				}
+			} catch (error) {
+				console.error("Unexpected error fetching profile:", error);
+				setProfile(null);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[profile]
+	); // Add profile as dependency
 
 	useEffect(() => {
 		let mounted = true;
@@ -109,6 +108,21 @@ export const AuthProvider = ({ children }) => {
 			subscription.unsubscribe();
 		};
 	}, [assignProfile]);
+
+	useEffect(() => {
+		const handleVisibilityChange = () => {
+			if (!document.hidden && session && !profile) {
+				// Tab became visible and we have a session but no profile
+				assignProfile(session.user.id);
+			}
+		};
+
+		document.addEventListener("visibilitychange", handleVisibilityChange);
+
+		return () => {
+			document.removeEventListener("visibilitychange", handleVisibilityChange);
+		};
+	}, [session, profile, assignProfile]);
 
 	const signUpNewUser = async (email, password) => {
 		const { data, error } = await supabase.auth.signUp({

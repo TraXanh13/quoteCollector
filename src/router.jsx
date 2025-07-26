@@ -6,48 +6,57 @@ import EditProfile from "./components/account/EditProfile";
 import Dashboard from "./components/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header";
+import WhoSaidIt from "./components/WhoSaidIt.jsx";
 
 const Layout = () => {
-    return (
-        <>
-            <Header />
-            <Outlet />
-        </>
-    );
+	return (
+		<>
+			<Header />
+			<Outlet />
+		</>
+	);
 };
 
 export const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <Layout />,
-        children: [
-            { 
-                index: true, 
-                element: (
-                    <PrivateRoute>
-                        <Dashboard />
-                    </PrivateRoute>
-                )
-            }, // Redirect authenticated users to dashboard
-            {
-                path: "/dashboard",
-                element: (
-                    <PrivateRoute>
-                        <Dashboard />
-                    </PrivateRoute>
-                ),
-            },
-            { path: "/signup", element: <Signup /> },
-            { path: "/signin", element: <Signin /> },
-            { 
-                path: "/edit-profile", 
-                element: (
-                    <PrivateRoute>
-                        <EditProfile />
-                    </PrivateRoute>
-                )
-            },
-            { path: "/welcome", element: <App /> }, // Move the welcome page to a separate route
-        ],
-    },
+	{
+		path: "/",
+		element: <Layout />,
+		children: [
+			{
+				index: true,
+				element: (
+					<PrivateRoute>
+						<Dashboard />
+					</PrivateRoute>
+				),
+			}, // Redirect authenticated users to dashboard
+			{
+				path: "/dashboard",
+				element: (
+					<PrivateRoute>
+						<Dashboard />
+					</PrivateRoute>
+				),
+			},
+			{ path: "/signup", element: <Signup /> },
+			{ path: "/signin", element: <Signin /> },
+			{
+				path: "/edit-profile",
+				element: (
+					<PrivateRoute>
+						<EditProfile />
+					</PrivateRoute>
+				),
+			},
+			{
+				path: "/who-said-it",
+				element: (
+					<PrivateRoute>
+						<WhoSaidIt />
+					</PrivateRoute>
+				),
+			},
+			{ path: "/welcome", element: <App /> },
+		],
+	},
 ]);
