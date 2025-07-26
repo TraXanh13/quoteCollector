@@ -17,9 +17,15 @@ const Header = () => {
 
 	return session != undefined ? (
 		<header className="top-0 flex justify-between items-center p-4">
-			<Link to="/dashboard" className="text-text dark:text-text-dark">
-				Quote Collector
-			</Link>
+			<div className="flex items-center gap-4">
+				<Link to="/dashboard" className="text-text dark:text-text-dark">
+					Quote Collector
+				</Link>
+				<Link to="/who-said-it" className="text-text dark:text-text-dark">
+					Who Said It?
+				</Link>
+			</div>
+
 			<div className="flex items-center gap-4">
 				<Link to="/edit-profile" className="text-text dark:text-text-dark">
 					{profile?.username}

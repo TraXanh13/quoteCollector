@@ -3,7 +3,7 @@ import { UserAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 
 const PrivateRoute = ({ children }) => {
-	const { session, loading } = UserAuth(); // Remove profile dependency
+	const { session, profile, loading } = UserAuth();
 
 	// Show loading while checking authentication
 	if (loading) {
@@ -21,9 +21,14 @@ const PrivateRoute = ({ children }) => {
 		);
 	}
 
-	// Check authentication - only need session
+	// Check authentication
 	if (!session) {
 		return <Navigate to="/signup" replace />;
+	}
+
+	// If we have a session but no profile, redirect to profile setup
+	if (session && profile === null) {
+		return <Navigate to="/edit-profile" replace />;
 	}
 
 	return children;
