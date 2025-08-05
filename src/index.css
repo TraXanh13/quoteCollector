@@ -58,6 +58,11 @@
 		outline: 4px auto -webkit-focus-ring-color;
 	}
 
+	.icon:hover {
+		filter: drop-shadow(0px 1000px 0 #5056cc);
+		transform: translateY(-1000px);
+	}
+
 	label {
 		@apply font-medium mb-2;
 	}
@@ -70,5 +75,14 @@
 		button {
 			@apply bg-link-dark hover:bg-link-hover;
 		}
+	}
+}
+
+@layer utilities {
+	/* Custom utility for white filter */
+	.filter-white {
+		/* -webkit-filter: invert(100%); */
+		filter: drop-shadow(0px 1000px 0 white);
+		transform: translateY(-1000px);
 	}
 }
