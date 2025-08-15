@@ -97,6 +97,9 @@ const QuoteEntry = () => {
 			recorder: recorder,
 			isAnonymous: isAnonymous,
 		});
+
+		// Clear the quote textarea but leave the rest as is
+		event.target.quote.value = "";
 	}
 
 	async function addQuote({
