@@ -8,10 +8,17 @@ const Header = () => {
 
 	const handleSignOut = async () => {
 		try {
-			await signOut();
-			navigate("/signin");
+			// Add a timeout to prevent hanging
+			const timeoutPromise = new Promise((_, reject) =>
+				setTimeout(() => reject(new Error("Sign out timeout")), 5000)
+			);
+
+			await Promise.race([signOut(), timeoutPromise]);
+			console.log("User signed out");
 		} catch (error) {
 			console.error("Error during sign out:", error);
+		} finally {
+			navigate("/signin");
 		}
 	};
 
@@ -30,9 +37,12 @@ const Header = () => {
 				<Link to="/edit-profile" className="text-text dark:text-text-dark">
 					{profile?.username}
 				</Link>
-				<a onClick={handleSignOut} className="text-text dark:text-text-dark">
-					Sign Out
-				</a>
+				<button
+					onClick={handleSignOut}
+					className="text-text dark:text-text-dark"
+				>
+					Sign Out!
+				</button>
 			</div>
 		</header>
 	) : (
