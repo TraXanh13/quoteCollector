@@ -157,9 +157,26 @@ export const AuthProvider = ({ children }) => {
 	};
 
 	const signOut = async () => {
-		const { error } = await supabase.auth.signOut();
-		if (error) {
-			console.error("Error signing out:", error);
+		try {
+			const timeoutPromise = new Promise((_, reject) =>
+				setTimeout(() => reject(new Error("Sign out timeout")), 5000)
+			);
+
+			const signOutPromise = supabase.auth.signOut();
+
+			const { error } = await Promise.race([signOutPromise, timeoutPromise]);
+
+			if (error) {
+				console.error("Error signing out:", error);
+			}
+		} catch (error) {
+			console.error("Sign out failed or timed out:", error);
+			// Force local cleanup even if API call failed
+		} finally {
+			setSession(null);
+			setProfile(null);
+			setLoading(false);
+			localStorage.clear();
 		}
 	};
 
