@@ -4,6 +4,7 @@ import {
 	useState,
 	useContext,
 	useCallback,
+	useRef,
 } from "react";
 import { supabase } from "../util/supabaseClient";
 
@@ -13,6 +14,17 @@ export const AuthProvider = ({ children }) => {
 	const [session, setSession] = useState(null);
 	const [profile, setProfile] = useState(null);
 	const [loading, setLoading] = useState(true);
+	const [profileLoading, setProfileLoading] = useState(false);
+
+	// Refs to always get current values in event handlers
+	const sessionRef = useRef(session);
+	const profileRef = useRef(profile);
+
+	// Update refs when state changes
+	useEffect(() => {
+		sessionRef.current = session;
+		profileRef.current = profile;
+	}, [session, profile]);
 
 	const assignProfile = useCallback(
 		async (userID) => {
@@ -26,31 +38,59 @@ export const AuthProvider = ({ children }) => {
 				return;
 			}
 
+			// Don't start a new fetch if one is already in progress
+			if (profileLoading) {
+				return;
+			}
+
+			setProfileLoading(true);
+
 			try {
-				const { data, error } = await supabase
+				// Shorter timeout but still allow page to load
+				const timeoutPromise = new Promise((_, reject) =>
+					setTimeout(
+						() =>
+							reject(
+								new Error("Profile fetch timeout - proceeding without profile")
+							),
+						2000
+					)
+				);
+
+				const profilePromise = supabase
 					.from("profiles")
 					.select("id, user_id, first_name, last_name, username")
 					.eq("user_id", userID)
 					.single();
 
+				const { data, error } = await Promise.race([
+					profilePromise,
+					timeoutPromise,
+				]);
+
 				if (error) {
-					console.error("Error fetching profile:", error);
-					setProfile(null);
+					// If it's a "not found" error, that's okay - user might not have a profile yet
+					if (error.code === "PGRST116") {
+						setProfile(null);
+					} else {
+						setProfile(null);
+					}
 				} else if (data) {
 					setProfile(data);
 				} else {
 					setProfile(null);
 				}
 			} catch (error) {
-				console.error("Unexpected error fetching profile:", error);
 				setProfile(null);
 			} finally {
 				setLoading(false);
+				setProfileLoading(false);
 			}
 		},
-		[profile]
-	); // Add profile as dependency
+		[profile, profileLoading]
+	); // Add profile and profileLoading as dependencies
 
+	// Initialize auth state and profile
 	useEffect(() => {
 		let mounted = true;
 
@@ -109,11 +149,16 @@ export const AuthProvider = ({ children }) => {
 		};
 	}, [assignProfile]);
 
+	// Refetch profile when the tab becomes visible
 	useEffect(() => {
 		const handleVisibilityChange = () => {
-			if (!document.hidden && session && !profile) {
-				// Tab became visible and we have a session but no profile
-				assignProfile(session.user.id);
+			if (!document.hidden) {
+				const currentSession = sessionRef.current;
+				const currentProfile = profileRef.current;
+
+				if (currentSession && currentSession.user && !currentProfile) {
+					assignProfile(currentSession.user.id);
+				}
 			}
 		};
 
@@ -122,7 +167,7 @@ export const AuthProvider = ({ children }) => {
 		return () => {
 			document.removeEventListener("visibilitychange", handleVisibilityChange);
 		};
-	}, [session, profile, assignProfile]);
+	}, [assignProfile]); // Only assignProfile as dependency
 
 	const signUpNewUser = async (email, password) => {
 		const { data, error } = await supabase.auth.signUp({

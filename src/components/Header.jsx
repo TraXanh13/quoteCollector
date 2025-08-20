@@ -14,7 +14,6 @@ const Header = () => {
 			);
 
 			await Promise.race([signOut(), timeoutPromise]);
-			console.log("User signed out");
 		} catch (error) {
 			console.error("Error during sign out:", error);
 		} finally {
