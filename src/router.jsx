@@ -7,6 +7,7 @@ import Dashboard from "./components/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header";
 import WhoSaidIt from "./components/WhoSaidIt.jsx";
+import EditQuotes from "./components/EditQuotes.jsx";
 
 const Layout = () => {
 	return (
@@ -53,6 +54,14 @@ export const router = createBrowserRouter([
 				element: (
 					<PrivateRoute>
 						<WhoSaidIt />
+					</PrivateRoute>
+				),
+			},
+			{
+				path: "/edit-quotes",
+				element: (
+					<PrivateRoute>
+						<EditQuotes />
 					</PrivateRoute>
 				),
 			},
