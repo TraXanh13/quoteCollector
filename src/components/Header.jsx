@@ -27,8 +27,8 @@ const Header = () => {
 				<Link to="/dashboard" className="text-text dark:text-text-dark">
 					Quote Collector
 				</Link>
-				<Link to="/edit-quotes" className="text-text dark:text-text-dark">
-					Edit Quotes
+				<Link to="/your-quotes" className="text-text dark:text-text-dark">
+					Your Quotes
 				</Link>
 				<Link to="/who-said-it" className="text-text dark:text-text-dark">
 					Who Said It?
