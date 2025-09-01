@@ -38,8 +38,10 @@ export const QuoteProvider = ({ children }) => {
 		// Fetch quotes from the API or context
 		const { data, error } = await supabase
 			.from("quotes")
-			.select("*")
-			.eq("user_id", profile?.id);
+			.select(
+				"author_id, group_id, quote, is_anon, author:profiles!author_id(id, first_name, last_name, username)"
+			)
+			.eq("recorder_id", profile?.id);
 
 		if (error) {
 			console.error("Error fetching quotes:", error);
