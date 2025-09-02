@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
 			}
 		},
 		[profile, profileLoading]
-	); // Add profile and profileLoading as dependencies
+	);
 
 	// Initialize auth state and profile
 	useEffect(() => {
