@@ -39,12 +39,27 @@ export const QuoteProvider = ({ children }) => {
 		const { data, error } = await supabase
 			.from("quotes")
 			.select(
-				"author_id, group_id, quote, is_anon, author:profiles!author_id(id, first_name, last_name, username)"
+				"id, author_id, group_id, quote, is_anon, author:profiles!author_id(id, first_name, last_name, username), group:groups!group_id(id, name)"
 			)
-			.eq("recorder_id", profile?.id);
+			.eq("recorder_id", profile?.id)
+			.order("created_at", { ascending: false });
 
 		if (error) {
 			console.error("Error fetching quotes:", error);
+		} else {
+			return data;
+		}
+		return [];
+	}
+
+	async function removeQuote(quoteID) {
+		const { data, error } = await supabase
+			.from("quotes")
+			.delete()
+			.eq("id", quoteID);
+
+		if (error) {
+			console.error("Error deleting quote:", error);
 		} else {
 			return data;
 		}
@@ -70,7 +85,9 @@ export const QuoteProvider = ({ children }) => {
 	}
 
 	return (
-		<QuoteContext.Provider value={{ users, userGroups, getQuotes }}>
+		<QuoteContext.Provider
+			value={{ users, userGroups, getQuotes, removeQuote }}
+		>
 			{children}
 		</QuoteContext.Provider>
 	);

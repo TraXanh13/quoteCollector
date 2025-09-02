@@ -2,7 +2,7 @@ import { React, useState, useEffect } from "react";
 import { useQuote } from "../context/QuoteContext.jsx";
 
 function YourQuotes() {
-	const { getQuotes } = useQuote();
+	const { getQuotes, removeQuote } = useQuote();
 	const [quotes, setQuotes] = useState([]);
 
 	useEffect(() => {
@@ -15,15 +15,36 @@ function YourQuotes() {
 	}, [getQuotes]);
 
 	const getQuoteCard = (quote) => {
-		const QUOTE_CARD_TEXT_LIMIT = 100;
-		console.log(quote);
+		const QUOTE_CARD_TEXT_LIMIT = 80;
 		return (
+			// TODO: Make this responsive
 			<div
 				id={quote.id}
 				key={quote.id}
-				className="border-2 border-white bg-gray-900 rounded-md p-4 m-4 w-1/4 h-40 relative"
+				className="border-2 border-white bg-gray-900 rounded-md p-4 m-4 w-1/4 min-h-60 p-4 relative flex flex-col"
 			>
-				<div>
+				<p className="font-bold mx-auto">{quote.group.name}</p>
+				<div className="flex mb-4 mx-auto">
+					<div className="right-0">
+						<button className="border-2 border-white bg-transparent text-white p-1 rounded mr-2">
+							Edit
+						</button>
+						<button
+							className="bg-red-500 text-white p-1 rounded"
+							onClick={() => {
+								if (
+									window.confirm("Are you sure you want to delete this quote?")
+								) {
+									removeQuote(quote.id);
+									setQuotes(quotes.filter((q) => q.id !== quote.id));
+								}
+							}}
+						>
+							Delete
+						</button>
+					</div>
+				</div>
+				<div className="flex flex-col flex-grow align-middle justify-center">
 					<p>
 						{quote.quote.length > QUOTE_CARD_TEXT_LIMIT
 							? `${quote.quote.substring(0, QUOTE_CARD_TEXT_LIMIT)}...`
@@ -41,7 +62,7 @@ function YourQuotes() {
 					<img
 						src="/src/assets/anonymous.png"
 						alt="Anon Identifier"
-						className="absolute w-8 h-8 rounded-full bottom-0 right-0 filter dark:invert"
+						className="absolute w-8 h-8 rounded-full top-2 right-4 filter dark:invert"
 					/>
 				) : (
 					<></>
