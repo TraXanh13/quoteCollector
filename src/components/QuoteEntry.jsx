@@ -81,6 +81,7 @@ const QuoteEntry = () => {
 		const quote = formData.get("quote");
 		const author = formData.get("author");
 		const recorder = profile?.id;
+		const recorder_userID = profile?.user_id;
 		const isAnonymous =
 			formData.get("recorder") === "markAsAnonymous" ? true : false;
 		if (!quote || !author || !recorder) {
@@ -95,6 +96,7 @@ const QuoteEntry = () => {
 			quote: quote,
 			author: author,
 			recorder: recorder,
+			recorder_userID: recorder_userID,
 			isAnonymous: isAnonymous,
 		});
 
@@ -109,6 +111,7 @@ const QuoteEntry = () => {
 		author,
 		recorder,
 		isAnonymous,
+		recorder_userID,
 	}) {
 		const { error } = await supabase.from("quotes").insert([
 			{
@@ -116,6 +119,7 @@ const QuoteEntry = () => {
 				recorder_id: recorder,
 				group_id: group,
 				is_anon: isAnonymous,
+				recorder_userID: recorder_userID,
 				quote: quote,
 			},
 		]);
