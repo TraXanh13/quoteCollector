@@ -28,7 +28,7 @@ const QuoteEntry = () => {
 			.from("group_members")
 			.select("groups(name, id)")
 			.eq("user_id", profile?.id)
-			.order("groups(name)", { ascending: true });
+			.order("groups(name)", { ascending: false });
 
 		if (error) {
 			console.error("Error fetching user groups:", error);
