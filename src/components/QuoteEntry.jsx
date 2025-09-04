@@ -1,18 +1,26 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../util/supabaseClient";
 import { UserAuth } from "../context/AuthContext.jsx";
+import { useQuote } from "../context/QuoteContext.jsx";
 
 const QuoteEntry = () => {
-	const [users, setUsers] = useState([]);
 	const [userGroups, setUserGroups] = useState([]);
 	const { profile } = UserAuth();
+	const { users, getUsers } = useQuote();
 
 	useEffect(() => {
 		if (profile?.id) {
 			getUserGroups();
 		}
-		getUsers();
 	}, [profile?.id]);
+
+	useEffect(() => {
+		// When userGroups is loaded, fetch users for the first group
+		if (userGroups.length > 0) {
+			const firstGroupID = userGroups[0].groups.id;
+			getUsers(firstGroupID);
+		}
+	}, [userGroups]);
 
 	// Pulls from supabase to get all the groups associated to the logged in user
 	async function getUserGroups() {
@@ -20,7 +28,7 @@ const QuoteEntry = () => {
 			.from("group_members")
 			.select("groups(name, id)")
 			.eq("user_id", profile?.id)
-			.order("groups(name)", { ascending: true });
+			.order("groups(name)", { ascending: false });
 
 		if (error) {
 			console.error("Error fetching user groups:", error);
@@ -33,29 +41,11 @@ const QuoteEntry = () => {
 		}
 	}
 
-	async function getUsers() {
-		// TODO: Populate the user dropdown with users from the database with the appropriate group
-		const { data, error } = await supabase
-			.from("profiles")
-			.select("first_name, last_name, id")
-			.order("first_name", { ascending: true });
-
-		if (error) {
-			console.error("Error fetching users:", error);
-		} else {
-			setUsers(data);
-		}
-
-		if (!data || data.length === 0) {
-			console.warn("No users found in the database.");
-		}
-	}
-
 	// Generates options for the user dropdown
 	function getUserOption() {
 		return users.map((user) => (
-			<option key={user.id} value={user.id}>
-				{user.first_name} {user.last_name}
+			<option key={user.user_id} value={user.user_id}>
+				{user.profiles.first_name} {user.profiles.last_name}
 			</option>
 		));
 	}
@@ -139,7 +129,15 @@ const QuoteEntry = () => {
 				<section className="col-span-2 flex mx-auto">
 					<label htmlFor="quote" className="col-span-2">
 						Enter a Quote to Group:
-						<select className="my-auto mx-4" id="group" name="group">
+						<select
+							className="my-auto mx-4"
+							id="group"
+							name="group"
+							onChange={(event) => {
+								const selectedGroupID = event.target.value;
+								getUsers(selectedGroupID);
+							}}
+						>
 							{USER_GROUPS}
 						</select>
 					</label>

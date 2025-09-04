@@ -66,17 +66,29 @@ export const QuoteProvider = ({ children }) => {
 		return [];
 	}
 
-	async function getUsers() {
-		// TODO: Populate the user dropdown with users from the database with the appropriate group
-		const { data, error } = await supabase
-			.from("profiles")
-			.select("first_name, last_name, id")
-			.order("first_name", { ascending: true });
+	async function getUsers(groupID = "") {
+		let query = supabase
+			.from("group_members")
+			.select(
+				"group_id, user_id, role, profiles!user_id(id, first_name, last_name)"
+			);
+
+		if (groupID) {
+			query = query.eq("group_id", groupID);
+		}
+
+		const { data, error } = await query;
 
 		if (error) {
 			console.error("Error fetching users:", error);
 		} else {
-			setUsers(data);
+			const sorted = (data ?? []).sort((a, b) =>
+				(a.profiles?.first_name || "").localeCompare(
+					b.profiles?.first_name || ""
+				)
+			);
+			setUsers(sorted);
+			console.log("Fetched users:", sorted);
 		}
 
 		if (!data || data.length === 0) {
@@ -86,7 +98,7 @@ export const QuoteProvider = ({ children }) => {
 
 	return (
 		<QuoteContext.Provider
-			value={{ users, userGroups, getQuotes, removeQuote }}
+			value={{ users, userGroups, getQuotes, removeQuote, getUsers }}
 		>
 			{children}
 		</QuoteContext.Provider>

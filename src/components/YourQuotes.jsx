@@ -15,13 +15,12 @@ function YourQuotes() {
 	}, [getQuotes]);
 
 	const getQuoteCard = (quote) => {
-		const QUOTE_CARD_TEXT_LIMIT = 80;
+		const QUOTE_CARD_TEXT_LIMIT = 1000;
 		return (
-			// TODO: Make this responsive
 			<div
 				id={quote.id}
 				key={quote.id}
-				className="border-2 border-white bg-gray-900 rounded-md p-4 m-4 w-1/4 min-h-60 p-4 relative flex flex-col"
+				className="border-2 border-white bg-gray-900 rounded-md relative flex flex-col m-4 min-h-60 p-4 w-full md:w-1/4"
 			>
 				<p className="font-bold mx-auto">{quote.group.name}</p>
 				<div className="flex mb-4 mx-auto">
