@@ -12,7 +12,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
 	const [session, setSession] = useState(null);
-	const [profile, setProfile] = useState(null);
+	const [profile, setProfile] = useState(undefined);
 	const [loading, setLoading] = useState(true);
 	const [profileLoading, setProfileLoading] = useState(false);
 
@@ -26,69 +26,53 @@ export const AuthProvider = ({ children }) => {
 		profileRef.current = profile;
 	}, [session, profile]);
 
-	const assignProfile = useCallback(
-		async (userID) => {
-			if (!userID) {
+	const assignProfile = useCallback(async (userID) => {
+		if (!userID) {
+			setProfile(null);
+			return;
+		}
+
+		setProfileLoading(true);
+
+		try {
+			// Shorter timeout but still allow page to load
+			const timeoutPromise = new Promise((_, reject) =>
+				setTimeout(
+					() =>
+						reject(
+							new Error("Profile fetch timeout - proceeding without profile")
+						),
+					2000
+				)
+			);
+
+			const profilePromise = supabase
+				.from("profiles")
+				.select("id, user_id, first_name, last_name, username")
+				.eq("user_id", userID)
+				.single();
+
+			const { data, error } = await Promise.race([
+				profilePromise,
+				timeoutPromise,
+			]);
+			if (error) {
+				console.log("Profile fetch error:", error);
 				setProfile(null);
-				return;
-			}
-
-			// Don't refetch if we already have this user's profile
-			if (profile && profile.user_id === userID) {
-				return;
-			}
-
-			// Don't start a new fetch if one is already in progress
-			if (profileLoading) {
-				return;
-			}
-
-			setProfileLoading(true);
-
-			try {
-				// Shorter timeout but still allow page to load
-				const timeoutPromise = new Promise((_, reject) =>
-					setTimeout(
-						() =>
-							reject(
-								new Error("Profile fetch timeout - proceeding without profile")
-							),
-						2000
-					)
-				);
-
-				const profilePromise = supabase
-					.from("profiles")
-					.select("id, user_id, first_name, last_name, username")
-					.eq("user_id", userID)
-					.single();
-
-				const { data, error } = await Promise.race([
-					profilePromise,
-					timeoutPromise,
-				]);
-
-				if (error) {
-					// If it's a "not found" error, that's okay - user might not have a profile yet
-					if (error.code === "PGRST116") {
-						setProfile(null);
-					} else {
-						setProfile(null);
-					}
-				} else if (data) {
-					setProfile(data);
-				} else {
-					setProfile(null);
-				}
-			} catch (error) {
+			} else if (data) {
+				console.log("Profile found:", data);
+				setProfile(data);
+			} else {
+				console.log("No profile data returned");
 				setProfile(null);
-			} finally {
-				setLoading(false);
-				setProfileLoading(false);
 			}
-		},
-		[profile, profileLoading]
-	);
+		} catch (error) {
+			setProfile(null);
+		} finally {
+			// setLoading(false);
+			setProfileLoading(false);
+		}
+	}, []);
 
 	// Initialize auth state and profile
 	useEffect(() => {
@@ -114,9 +98,8 @@ export const AuthProvider = ({ children }) => {
 					setSession(session);
 					if (session && session.user) {
 						await assignProfile(session.user.id);
-					} else {
-						setLoading(false);
 					}
+					setLoading(false);
 				}
 			} catch (error) {
 				console.error("Error initializing auth:", error);
@@ -138,8 +121,8 @@ export const AuthProvider = ({ children }) => {
 					await assignProfile(session.user.id);
 				} else {
 					setProfile(null);
-					setLoading(false);
 				}
+				setLoading(false);
 			}
 		});
 
