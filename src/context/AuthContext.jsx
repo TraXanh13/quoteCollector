@@ -69,8 +69,8 @@ export const AuthProvider = ({ children }) => {
 		} catch (error) {
 			setProfile(null);
 		} finally {
-			// setLoading(false);
 			setProfileLoading(false);
+			setLoading(false);
 		}
 	}, []);
 
@@ -98,8 +98,9 @@ export const AuthProvider = ({ children }) => {
 					setSession(session);
 					if (session && session.user) {
 						await assignProfile(session.user.id);
+					} else {
+						setLoading(false);
 					}
-					setLoading(false);
 				}
 			} catch (error) {
 				console.error("Error initializing auth:", error);
