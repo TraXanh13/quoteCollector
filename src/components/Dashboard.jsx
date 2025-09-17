@@ -2,7 +2,7 @@ import React from "react";
 import { UserAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import QuoteEntry from "./QuoteEntry";
+import QuoteEntry from "./quote/QuoteEntry";
 
 const Dashboard = () => {
 	const { session, profile, loading } = UserAuth();

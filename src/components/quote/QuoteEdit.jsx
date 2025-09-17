@@ -1,16 +1,31 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../util/supabaseClient";
-import { UserAuth } from "../context/AuthContext.jsx";
-import { useQuote } from "../context/QuoteContext.jsx";
+import { supabase } from "../../util/supabaseClient.jsx";
+import { UserAuth } from "../../context/AuthContext.jsx";
+import { useQuote } from "../../context/QuoteContext.jsx";
 
-const QuoteEntry = () => {
+const QuoteEdit = () => {
 	const [userGroups, setUserGroups] = useState([]);
 	const { profile } = UserAuth();
-	const { users, getUsers } = useQuote();
+	const { users, getUsers, getQuote } = useQuote();
 
 	useEffect(() => {
 		if (profile?.id) {
 			getUserGroups();
+		}
+		const selectedQuoteID = new URLSearchParams(window.location.search).get(
+			"id"
+		);
+		console.log("Selected Quote ID:", selectedQuoteID);
+		if (selectedQuoteID) {
+			const quoteData = getQuote(selectedQuoteID);
+			console.log("Quote Data:", quoteData);
+			// getQuote(selectedQuoteID).then((quoteData) => {
+			// 	if (quoteData) {
+			// 		document.getElementById("quote").value = quoteData.quote;
+			// 		document.getElementById("author").value = quoteData.author_id;
+			// 		document.getElementById("group").value = quoteData.group_id;
+			// 	}
+			// });
 		}
 	}, [profile?.id]);
 
@@ -81,47 +96,36 @@ const QuoteEntry = () => {
 
 		// TODO: Set this as a loading state
 		alert(`Quote submitted!`);
-		addQuote({
+		updateQuote({
 			group: group,
 			quote: quote,
 			author: author,
-			recorder: recorder,
-			recorder_userID: recorder_userID,
 			isAnonymous: isAnonymous,
 		});
-
-		// Clear the quote textarea but leave the rest as is
-		event.target.quote.value = "";
 	}
 
-	async function addQuote({
-		// This defaults to the test group
-		group,
-		quote,
-		author,
-		recorder,
-		isAnonymous,
-		recorder_userID,
-	}) {
-		const { error } = await supabase.from("quotes").insert([
-			{
-				author_id: author,
-				recorder_id: recorder,
-				group_id: group,
-				is_anon: isAnonymous,
-				recorder_userID: recorder_userID,
-				quote: quote,
-			},
-		]);
+	async function updateQuote({ id, group, quote, author, isAnonymous }) {
+		const { error } = await supabase
+			.from("quotes")
+			.update([
+				{
+					author_id: author,
+					group_id: group,
+					is_anon: isAnonymous,
+					quote: quote,
+				},
+			])
+			.eq("id", id);
 		if (error) {
-			console.error("Error adding quote:", error);
+			console.error("Error updating quote:", error);
 		} else {
-			alert("Quote added successfully");
+			alert("Quote updated successfully");
 		}
 	}
 
 	return (
 		<div>
+			{console.log("Inside quote edit")}
 			<form
 				className="grid grid-cols-2 gap-4 m-auto max-w-2xl p-4 border-2 border-gray-300 rounded-lg shadow-md dark:bg-overlay-dark"
 				onSubmit={handleSubmit}
@@ -178,4 +182,4 @@ const QuoteEntry = () => {
 	);
 };
 
-export default QuoteEntry;
+export default QuoteEdit;

@@ -1,9 +1,11 @@
 import { React, useState, useEffect } from "react";
-import { useQuote } from "../context/QuoteContext.jsx";
+import { useQuote } from "../../context/QuoteContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 function YourQuotes() {
 	const { getQuotes, removeQuote } = useQuote();
 	const [quotes, setQuotes] = useState([]);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchQuotes = async () => {
@@ -25,7 +27,12 @@ function YourQuotes() {
 				<p className="font-bold mx-auto">{quote.group.name}</p>
 				<div className="flex mb-4 mx-auto">
 					<div className="right-0">
-						<button className="border-2 border-white bg-transparent text-white p-1 rounded mr-2">
+						<button
+							className="border-2 border-white bg-transparent text-white p-1 rounded mr-2"
+							onClick={() => {
+								navigate(`/quote-edit?id=${quote.id}`);
+							}}
+						>
 							Edit
 						</button>
 						<button

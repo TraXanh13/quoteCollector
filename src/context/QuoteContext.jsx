@@ -52,6 +52,27 @@ export const QuoteProvider = ({ children }) => {
 		return [];
 	}
 
+	// Pulls from supabase to get a specific quote by ID
+	async function getQuote(id) {
+		// Fetch quotes from the API or context
+		const { data, error } = await supabase
+			.from("quotes")
+			.select(
+				"id, author_id, group_id, quote, is_anon, author:profiles!author_id(id, first_name, last_name, username), group:groups!group_id(id, name)"
+			)
+			.eq("recorder_id", profile?.id)
+			.eq("id", id)
+			.order("created_at", { ascending: false });
+
+		if (error) {
+			console.error("Error fetching quotes:", error);
+		} else {
+			return data;
+		}
+		return [];
+	}
+
+	// Removes a quote from the database
 	async function removeQuote(quoteID) {
 		const { data, error } = await supabase
 			.from("quotes")
