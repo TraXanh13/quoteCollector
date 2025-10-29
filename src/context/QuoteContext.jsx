@@ -119,7 +119,7 @@ export const QuoteProvider = ({ children }) => {
 
 	return (
 		<QuoteContext.Provider
-			value={{ users, userGroups, getQuotes, removeQuote, getUsers }}
+			value={{ users, userGroups, getQuotes, getQuote,removeQuote, getUsers }}
 		>
 			{children}
 		</QuoteContext.Provider>
