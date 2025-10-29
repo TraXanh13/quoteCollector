@@ -27,7 +27,8 @@ const PrivateRoute = ({ children }) => {
 	}
 
 	// If we have a session but no profile, redirect to profile setup
-	if (session && profile === null) {
+	if (!loading && session && profile === null) {
+		console.log("Redirecting to edit-profile");
 		return <Navigate to="/edit-profile" replace />;
 	}
 

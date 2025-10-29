@@ -2,18 +2,11 @@ import React from "react";
 import { UserAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import QuoteEntry from "./QuoteEntry";
+import QuoteEntry from "./quote/QuoteEntry";
 
 const Dashboard = () => {
 	const { session, profile, loading } = UserAuth();
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		// Only redirect if we're not loading and have a session but no profile
-		if (!loading && session && profile === undefined) {
-			navigate("/edit-profile");
-		}
-	}, [session, profile, navigate, loading]);
 
 	if (loading) {
 		return <div>Loading...</div>;

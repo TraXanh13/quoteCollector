@@ -7,7 +7,8 @@ import Dashboard from "./components/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header";
 import WhoSaidIt from "./components/WhoSaidIt.jsx";
-import YourQuotes from "./components/YourQuotes.jsx";
+import YourQuotes from "./components/quote/YourQuotes.jsx";
+import QuoteEdit from "./components/quote/QuoteEdit.jsx";
 
 const Layout = () => {
 	return (
@@ -33,22 +34,11 @@ export const router = createBrowserRouter([
 			}, // Redirect authenticated users to dashboard
 			{
 				path: "/dashboard",
-				element: (
-					<PrivateRoute>
-						<Dashboard />
-					</PrivateRoute>
-				),
+				element: <Dashboard />,
 			},
 			{ path: "/signup", element: <Signup /> },
 			{ path: "/signin", element: <Signin /> },
-			{
-				path: "/edit-profile",
-				element: (
-					<PrivateRoute>
-						<EditProfile />
-					</PrivateRoute>
-				),
-			},
+			{ path: "/edit-profile", element: <EditProfile /> },
 			{
 				path: "/who-said-it",
 				element: (
@@ -62,6 +52,14 @@ export const router = createBrowserRouter([
 				element: (
 					<PrivateRoute>
 						<YourQuotes />
+					</PrivateRoute>
+				),
+			},
+			{
+				path: "/quote-edit",
+				element: (
+					<PrivateRoute>
+						<QuoteEdit />
 					</PrivateRoute>
 				),
 			},

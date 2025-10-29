@@ -1,24 +1,44 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../util/supabaseClient";
-import { UserAuth } from "../context/AuthContext.jsx";
-import { useQuote } from "../context/QuoteContext.jsx";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../util/supabaseClient.jsx";
+import { UserAuth } from "../../context/AuthContext.jsx";
+import { useQuote } from "../../context/QuoteContext.jsx";
 
-const QuoteEntry = () => {
+const QuoteEdit = () => {
 	const [userGroups, setUserGroups] = useState([]);
 	const { profile } = UserAuth();
-	const { users, getUsers } = useQuote();
+	const { users, getUsers, getQuote } = useQuote();
+	const [quote, setQuote] = useState('');
+	const [author, setAuthor] = useState('');
+	const [group, setGroup] = useState('');
+	const [isAnonymous, setIsAnonymous] = useState(false);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (profile?.id) {
 			getUserGroups();
 		}
+		const selectedQuoteID = new URLSearchParams(window.location.search).get(
+			"id"
+		);
+		if (selectedQuoteID) {
+			getQuote(selectedQuoteID).then((quoteData) => {
+				console.log("Quote Data:", quoteData);
+				if (quoteData && quoteData[0]) {
+					setQuote(quoteData[0].quote);
+					setAuthor(quoteData[0].author_id);
+					setGroup(quoteData[0].group_id);
+					setIsAnonymous(quoteData[0].is_anon);
+				}
+			});
+		}
 	}, [profile?.id]);
 
 	useEffect(() => {
-		// When userGroups is loaded, fetch users for the first group
+		// When userGroups is loaded, fetch users for the specific group
 		if (userGroups.length > 0) {
-			const firstGroupID = userGroups[0].groups.id;
-			getUsers(firstGroupID);
+			console.log("Selected Group ID for fetching users:", group);
+			getUsers(group);
 		}
 	}, [userGroups]);
 
@@ -43,19 +63,31 @@ const QuoteEntry = () => {
 
 	// Generates options for the user dropdown
 	function getUserOption() {
-		return users.map((user) => (
-			<option key={user.user_id} value={user.user_id}>
-				{user.profiles.first_name} {user.profiles.last_name}
-			</option>
+		return users.map((usr) => (
+			usr.user_id === author ? (
+				<option key={usr.user_id} value={usr.user_id} selected>
+					{usr.profiles.first_name} {usr.profiles.last_name}
+				</option> 
+			) : (
+				<option key={usr.user_id} value={usr.user_id}>
+					{usr.profiles.first_name} {usr.profiles.last_name}
+				</option>
+			)
 		));
 	}
 
 	// Generates options for the group dropdown
 	function getGroupOptions() {
-		return userGroups.map((group) => (
-			<option key={group.groups.id} value={group.groups.id}>
-				{group.groups.name}
-			</option>
+		return userGroups.map((grp) => (
+			grp.groups.id === group ? (
+				<option key={grp.groups.id} value={grp.groups.id} selected>
+					{grp.groups.name}
+				</option>
+			) : (
+				<option key={grp.groups.id} value={grp.groups.id}>
+					{grp.groups.name}
+				</option>
+			)
 		));
 	}
 
@@ -71,7 +103,6 @@ const QuoteEntry = () => {
 		const quote = formData.get("quote");
 		const author = formData.get("author");
 		const recorder = profile?.id;
-		const recorder_userID = profile?.user_id;
 		const isAnonymous =
 			formData.get("recorder") === "markAsAnonymous" ? true : false;
 		if (!quote || !author || !recorder) {
@@ -81,42 +112,35 @@ const QuoteEntry = () => {
 
 		// TODO: Set this as a loading state
 		alert(`Quote submitted!`);
-		addQuote({
+		updateQuote({
 			group: group,
 			quote: quote,
 			author: author,
-			recorder: recorder,
-			recorder_userID: recorder_userID,
 			isAnonymous: isAnonymous,
 		});
 
-		// Clear the quote textarea but leave the rest as is
-		event.target.quote.value = "";
+		// Redirect to Your Quotes page after update
+		navigate("/your-quotes");
 	}
 
-	async function addQuote({
-		// This defaults to the test group
-		group,
-		quote,
-		author,
-		recorder,
-		isAnonymous,
-		recorder_userID,
-	}) {
-		const { error } = await supabase.from("quotes").insert([
+	async function updateQuote({ group, quote, author, isAnonymous }) {
+		const selectedQuoteID = new URLSearchParams(window.location.search).get(
+			"id"
+		);
+
+		const { error } = await supabase.from("quotes").update([
 			{
 				author_id: author,
-				recorder_id: recorder,
 				group_id: group,
 				is_anon: isAnonymous,
-				recorder_userID: recorder_userID,
 				quote: quote,
 			},
-		]);
+		])
+		.eq("id", selectedQuoteID);
 		if (error) {
-			console.error("Error adding quote:", error);
+			console.error("Error updating quote:", error);
 		} else {
-			alert("Quote added successfully");
+			alert("Quote updated successfully");
 		}
 	}
 
@@ -146,7 +170,8 @@ const QuoteEntry = () => {
 					id="quote"
 					className="col-span-2 p-2"
 					name="quote"
-					placeholder="Type your quote here..."
+					value={quote}
+					onChange={(e) => setQuote(e.target.value)}
 					required
 				/>
 				<section className="flex gap-2">
@@ -168,6 +193,8 @@ const QuoteEntry = () => {
 						id="recorder"
 						name="recorder"
 						value="markAsAnonymous"
+						checked={isAnonymous}
+						onChange={(e) => setIsAnonymous(e.target.checked)}
 					/>
 				</section>
 				<button type="submit" className="col-span-2 w-max px-4 mx-auto">
@@ -178,4 +205,4 @@ const QuoteEntry = () => {
 	);
 };
 
-export default QuoteEntry;
+export default QuoteEdit;
