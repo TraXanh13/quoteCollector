@@ -8,13 +8,6 @@ const Dashboard = () => {
 	const { session, profile, loading } = UserAuth();
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		// Only redirect if we're not loading and have a session but no profile
-		if (!loading && session && profile === undefined) {
-			navigate("/edit-profile");
-		}
-	}, [session, profile, navigate, loading]);
-
 	if (loading) {
 		return <div>Loading...</div>;
 	}
