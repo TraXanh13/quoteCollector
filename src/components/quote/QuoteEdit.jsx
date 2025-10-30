@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../util/supabaseClient.jsx";
 import { UserAuth } from "../../context/AuthContext.jsx";
@@ -34,13 +34,19 @@ const QuoteEdit = () => {
 		}
 	}, [profile?.id]);
 
-	useEffect(() => {
-		// When userGroups is loaded, fetch users for the specific group
-		if (userGroups.length > 0) {
-			console.log("Selected Group ID for fetching users:", group);
-			getUsers(group);
+	const fetchUsersForGroup = useCallback((groupId) => {
+		if (groupId) {
+			console.log("Selected Group ID for fetching users:", groupId);
+			getUsers(groupId);
 		}
-	}, [userGroups]);
+	}, [getUsers]);
+
+	useEffect(() => {
+		// When userGroups is loaded and group is selected, fetch users for the specific group
+		if (userGroups.length > 0 && group) {
+			fetchUsersForGroup(group);
+		}
+	}, [userGroups, group, fetchUsersForGroup]);
 
 	// Pulls from supabase to get all the groups associated to the logged in user
 	async function getUserGroups() {
@@ -159,7 +165,8 @@ const QuoteEdit = () => {
 							name="group"
 							onChange={(event) => {
 								const selectedGroupID = event.target.value;
-								getUsers(selectedGroupID);
+								setGroup(selectedGroupID);
+								fetchUsersForGroup(selectedGroupID);
 							}}
 						>
 							{USER_GROUPS}

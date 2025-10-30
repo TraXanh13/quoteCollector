@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useContext } from "react";
+import { createContext, useEffect, useState, useContext, useCallback } from "react";
 import { supabase } from "../util/supabaseClient";
 import { UserAuth } from "./AuthContext.jsx";
 
@@ -9,13 +9,8 @@ export const QuoteProvider = ({ children }) => {
 	const [userGroups, setUserGroups] = useState([]);
 	const { profile } = UserAuth();
 
-	useEffect(() => {
-		getUserGroups();
-		getUsers();
-	}, []);
-
 	// Pulls from supabase to get all the groups associated to the logged in user
-	async function getUserGroups() {
+	const getUserGroups = useCallback(async () => {
 		const { data, error } = await supabase
 			.from("group_members")
 			.select("groups(name, id)")
@@ -31,7 +26,13 @@ export const QuoteProvider = ({ children }) => {
 		if (!data || data.length === 0) {
 			console.warn("No groups found in the database.");
 		}
-	}
+	}, [profile?.id]);
+
+	useEffect(() => {
+		getUserGroups();
+		// Don't automatically fetch all users on mount
+		// Users should be fetched per group when needed
+	}, [getUserGroups]);
 
 	// Pulls from supabase to get all the quotes associated to the logged in user
 	async function getQuotes() {
@@ -87,18 +88,19 @@ export const QuoteProvider = ({ children }) => {
 		return [];
 	}
 
-	async function getUsers(groupID = "") {
-		let query = supabase
+	async function getUsers(groupID) {
+		if (!groupID) {
+			console.warn("getUsers called without groupID");
+			setUsers([]);
+			return;
+		}
+
+		const { data, error } = await supabase
 			.from("group_members")
 			.select(
 				"group_id, user_id, role, profiles!user_id(id, first_name, last_name)"
-			);
-
-		if (groupID) {
-			query = query.eq("group_id", groupID);
-		}
-
-		const { data, error } = await query;
+			)
+			.eq("group_id", groupID);
 
 		if (error) {
 			console.error("Error fetching users:", error);
@@ -109,11 +111,11 @@ export const QuoteProvider = ({ children }) => {
 				)
 			);
 			setUsers(sorted);
-			console.log("Fetched users:", sorted);
+			console.log("Fetched users for group", groupID, ":", sorted);
 		}
 
 		if (!data || data.length === 0) {
-			console.warn("No users found in the database.");
+			console.warn("No users found for group:", groupID);
 		}
 	}
 
